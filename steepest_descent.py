@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 class Function:
     def __init__(self):
         self.x1, self.x2 = sp.symbols("x1 x2")
-        self.f = self.x1 - self.x2 + 2 * (
-            self.x1**2) + 2 * self.x1 * self.x2 + (self.x2**2)
+        self.f = (self.x1 - 1)**2 + 2 * (2 * self.x2**2 - self.x1)**2
+        # self.f = self.x1 - self.x2 + 2 * (self.x1**2) + 2 * self.x1 * self.x2 + (self.x2**2)
 
     #Gradiente simbolico
     def symbolic_gradient(self):
@@ -59,13 +59,41 @@ class Optimal_step_length:
         function = self.function_alpha(x1, x2)
         derivative = sp.diff(function, self.alpha)
 
-        solved = sp.solve(derivative, self.alpha)
+        ##To handle with complex
+        #all_roots = sp.solve(derivative, self.alpha)
+        # real_roots = [
+        #     r.evalf() for r in all_roots
+        #     if abs(sp.im(r)) < 1e-8
+        # ]
+        # if not real_roots:
+        #     raise ValueError("No real step‐length found.")
 
-        #improve this to accept cases where there are more than 1 solutions
+        # solved = sp.solve(derivative, self.alpha)
+
+        all_roots = sp.solve(sp.simplify(derivative), self.alpha)
+
+        real_roots = []
+        tol = 1e-8
+        for r in all_roots:
+            rv = complex(r.evalf())
+            if abs(rv.imag) < tol:           
+                real_roots.append(rv.real)
+
+        if not real_roots:
+            raise ValueError("No real step-length found.")
+
+        candidates = [ alpha for alpha in real_roots if alpha > 0 ]
+        if not candidates:
+            raise ValueError("No positive real alpha found.")
+
+        opt_alpha = min(candidates)
+        return opt_alpha
+
         #(I think that is better to get only the positive solution, since in this method I want to minimize, and the direction is negative)
-        symbolic_alpha = solved[0]
-        num_alpha = float(symbolic_alpha)
-        return num_alpha
+
+        # symbolic_alpha = solved[0]
+        # num_alpha = float(symbolic_alpha)
+        # return num_alpha
 
 
 class New_point:
@@ -89,8 +117,9 @@ direc = Direction(func)
 opt = Optimal_step_length(func, direc)
 npt = New_point(func, direc, opt)
 
-x1 = 0
-x2 = 0
+x1 = 26
+x2 = 63
+# x1, x2 = 0, 0
 stop_criteria = np.e**-15
 iterations = 0
 
