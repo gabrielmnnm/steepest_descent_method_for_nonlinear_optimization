@@ -23,12 +23,8 @@ class Function:
     #Gradiente numerico
     def numeric_gradient(self, x1, x2):
         delf_delx, delf_dely = self.symbolic_gradient()
-        numeric_delf_delx = sp.lambdify((self.x1, self.x2),
-                                        delf_delx,
-                                        modules='numpy')
-        numeric_delf_dely = sp.lambdify((self.x1, self.x2),
-                                        delf_dely,
-                                        modules='numpy')
+        numeric_delf_delx = sp.lambdify((self.x1, self.x2), delf_delx, modules='numpy')
+        numeric_delf_dely = sp.lambdify((self.x1, self.x2), delf_dely, modules='numpy')
         return numeric_delf_delx(x1, x2), numeric_delf_dely(x1, x2)
 
 
@@ -44,7 +40,6 @@ class Direction:
 
 class Optimal_step_length:
     # minimize f(xi + alpha * Si)
-    # shit's also works for every function
     def __init__(self, func: Function, direc: Direction):
         self.direc = direc
         self.func = func
