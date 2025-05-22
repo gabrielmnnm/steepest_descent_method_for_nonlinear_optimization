@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 class Function:
     def __init__(self):
         self.x1, self.x2 = sp.symbols("x1 x2")
-        self.f = (self.x1 - 1)**2 + 2 * (2 * self.x2**2 - self.x1)**2
-        # self.f = self.x1 - self.x2 + 2 * (self.x1**2) + 2 * self.x1 * self.x2 + (self.x2**2)
+        # self.f = (self.x1 - 1)**2 + 2 * (2 * self.x2**2 - self.x1)**2
+        self.f = ((self.x1 - (2 * 2.6 + 3 * 6.3) / 5)**2) / 4 + ((self.x2 - (3 * 2.6 + 2 * 6.3) / 5)**2) / 9 + 150
 
     #Gradiente simbolico
     def symbolic_gradient(self):
@@ -59,7 +59,7 @@ class Optimal_step_length:
         function = self.function_alpha(x1, x2)
         derivative = sp.diff(function, self.alpha)
 
-        ##To handle with complex
+        ##Numeros complexos
         #all_roots = sp.solve(derivative, self.alpha)
         # real_roots = [
         #     r.evalf() for r in all_roots
@@ -80,21 +80,19 @@ class Optimal_step_length:
                 real_roots.append(rv.real)
 
         if not real_roots:
-            raise ValueError("No real step-length found.")
+            raise ValueError("Nenhum alpha real encontrado")
 
         candidates = [ alpha for alpha in real_roots if alpha > 0 ]
+        #(Acho que é melhor pegar apenas os valores positivos, uma vez que este método minimiza a função, e a direão é negativa)
         if not candidates:
-            raise ValueError("No positive real alpha found.")
+            raise ValueError("Nenhum alpha positivo encontrado")
 
         opt_alpha = min(candidates)
         return opt_alpha
 
-        #(I think that is better to get only the positive solution, since in this method I want to minimize, and the direction is negative)
-
         # symbolic_alpha = solved[0]
         # num_alpha = float(symbolic_alpha)
         # return num_alpha
-
 
 class New_point:
     def __init__(self, func: Function, direc: Direction, opt: Optimal_step_length):
@@ -117,30 +115,92 @@ direc = Direction(func)
 opt = Optimal_step_length(func, direc)
 npt = New_point(func, direc, opt)
 
-x1 = 26
-x2 = 63
-# x1, x2 = 0, 0
+x1 = 2.6
+x2 = 6.3
+
 stop_criteria = np.e**-15
 iterations = 0
+i = 0
+
+x1_list = []
+x2_list = []
+z_list = []
+iterations_list = []
+iterations_list.insert(i, iterations)
 
 stop = float('inf')
+grad_x, grad_y = func.numeric_gradient(x1, x2)
 
-while (stop >= stop_criteria):
+# while (stop >= stop_criteria):
+# while (i < 30):
+while(grad_x or grad_y >= stop_criteria):
     previous_function = func.numeric_function(x1, x2)
     print(f"Previous point: {x1, x2}")
     print(f"Previous function value: {previous_function}")
+    x1_list.insert(i, x1)
+    x2_list.insert(i, x2)
+    z_list.insert(i, previous_function)
 
     new_x1, new_x2 = npt.new_point(x1, x2)
     x1, x2 = new_x1, new_x2
     print(f"New point: {x1, x2}")
 
     next_function = func.numeric_function(x1, x2)
-    stop = abs(next_function - previous_function)
-    print(f"Actual stop value: {stop}")
-    iterations = iterations + 1
+
+    grad_x, grad_y = func.numeric_gradient(x1, x2)
+    print(f"Actual stop value: {grad_x, grad_y}")
+    # stop = abs(next_function - previous_function)
+    # print(f"Actual stop value: {stop}")
 
     print(f"New function value: {next_function}")
+
+    iterations += 1
+    i += 1
+    iterations_list.insert(i, iterations)
     print(f"Iterations: {iterations} \n")
+
+#inserir os últimos valores também
+x1_list.insert(iterations, x1)
+x2_list.insert(iterations, x2)
+z_list.insert(iterations, func.numeric_function(x1, x2))
+
+# print(x1_list)
+# print(" ")
+# print(x2_list)
+# print(" ")
+# print(z_list)
+# print(" ")
+
+# #inverte a ordem das listas
+# ##Para as curvas de nivel, os valores de z deve m ser crescentes
+# print(iterations_list)
+# print(" ")
+# x1_list_reverse = x1_list[::-1]
+# x2_list_reverse = x2_list[::-1]
+# z_list_reverse = z_list[::-1]
+
+# print(x1_list_reverse)
+# print(" ")
+# print(x2_list_reverse)
+# print(" ")
+# print(z_list_reverse)
+# print(" ")
+
+# for j in range(len(x1_list)):
+#     print(x1_list[j])
+#     j += 1
+
+# print(" ")
+
+# for j in range (len(x2_list)):
+#     print(x2_list[j])
+#     j += 1
+
+# print(" ")
+
+# for j in range (len(z_list)):
+#     print(z_list[j])
+#     j += 1
 
 # #TESTES
 # print(f"Função simbólica: {func.f}")
