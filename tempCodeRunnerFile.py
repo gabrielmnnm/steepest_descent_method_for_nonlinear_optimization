@@ -1,0 +1,6 @@
+    print(x1_list)
+    print(" ")
+    print(x2_list)
+    print(" ")
+    print(z_list)
+    print(" ")
